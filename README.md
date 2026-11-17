@@ -1,12 +1,14 @@
 # Wildcard — ClaimGuard: a wallet transaction guard for BSC free-mint claims
 
-> **STATUS: SUBMISSION PACK — REPO LIVE, NOT SUBMITTED.**
+> **STATUS: SUBMISSION PACK — REPO LIVE, ENDPOINT LIVE, NOT SUBMITTED.**
 > Prepared 15 Nov 2026 for zkVerify Agent Games Season 01, Wildcard track.
 > Wildcard prize: 100,000 VFY per track (50,000 / 30,000 / 20,000 for 1st / 2nd / 3rd).
 > Season: 21 Oct – 21 Nov 2026. Wildcard judging looks for: useful problem, working
 > implementation, clear explanation, verifiability (optional plus), and a public share (bonus).
-> **Repo created 17 Nov 2026. No live endpoint exists yet. Nothing here has been submitted.**
-> Companion Creator Track article (published 17 Nov 2026): https://github.com/haniefff/agent-games-season-01/blob/main/creator/article.md
+> **Repo created 17 Nov 2026. Public endpoint LIVE since 17 Nov 2026 20:58 WIB:
+> https://claimguard-production-14927a47.up.railway.app (`GET /health`, `POST /v1/check`).
+> Nothing here has been submitted.**
+> Companion Creator Track articles (published 17 Nov 2026): https://github.com/haniefff/agent-games-season-01/blob/main/creator/article.md and https://github.com/haniefff/agent-games-season-01/blob/main/creator/article-steal.md
 
 ## Agent link
 
@@ -105,21 +107,36 @@ at execution time; the gate cannot see off-chain page changes between preview an
 execute; it guards one call at a time and does not rank mints. Tested locally in
 dry-run mode — no test-count claim is made here.
 
-## Public endpoint plan (NOT built yet — do not claim it exists)
+## Public endpoint (LIVE since 17 Nov 2026 20:58 WIB)
 
-The Wildcard submission form asks for a public HTTPS endpoint. ClaimGuard is
-currently a local CLI, so the endpoint is a **plan**, not a live service:
+The Wildcard submission form asks for a public HTTPS endpoint. It exists now:
 
-- **Proposed:** `POST https://claimguard.<host>/v1/check` — accepts one candidate
-  call `{ to, data, value, wallet }`, runs the read-only precheck + `eth_call` +
-  preview-equivalent simulation, and returns `{ verdict: ok | wait | fatal |
-  unknown, checks: [...], reason }`. It would **never** execute a transaction
-  itself; execution stays a separate, user-confirmed step via the Binance App.
-- **Hosting:** a small Node.js service (same `fire.js` gate code) on a host with
-  stable HTTPS; health endpoint `GET /health`.
-- **What is missing before this can be registered:** a host, a domain, deployment
-  of the service, and the user's approval. Until then the submission can only
-  point at the public repo + this write-up.
+- **URL:** `https://claimguard-production-14927a47.up.railway.app`
+- **`GET /health`** — returns `{"ok": true, "service": "claimguard-check", ...}`.
+- **`POST /v1/check`** — accepts one candidate call `{ to, data, value, wallet }`,
+  runs the read-only precheck + `eth_call` simulation against BSC, and returns
+  `{ verdict: ok | wait | fatal | unknown, checks: [...] }`. It **never** executes
+  a transaction; execution stays a separate, user-confirmed step via the Binance App.
+- **Code:** `endpoint/server.cjs` in this repo (Node.js stdlib only, no dependencies),
+  `endpoint/README.md` documents the API, `railway.json` + root `package.json`
+  (no dependencies — only so Railway's Nixpacks detects Node) drive the deploy.
+  Project: Railway "mindful-courage", service "claimguard".
+
+**Verified live 17 Nov 2026 20:58 WIB (my own curl, not a screenshot):**
+`balanceOf` on the PXIO NFT contract for the author's wallet returned verdict
+`ok` (code present, 17,033 bytes; balance above zero; `eth_call` returned 1 —
+correct, the wallet holds 1 PXIO Miner). A check against an address with no code
+returned verdict `fatal`, as designed.
+
+**Honest scope:** this endpoint is the **on-chain half** of the gate only. The
+Binance preview checks (allowance/authority changes, RISK flags, `requestId`) are
+NOT covered here — they need the Binance preview API, which is not available from
+a public service. Run the CLI gate (`fire.js` / `pi-fire.js`) before any execute.
+
+**Deploy note:** Railway auto-deploy is NOT connected for this repo (the Railway
+GitHub App is not installed for `claimguard`), so redeploys are manual
+(Settings → Check for updates → Update). The Gatekeeper agent's Railway project
+("cozy-creativity") is a separate project and was not touched.
 
 ## zkVerify (optional) — the checkable claim
 
@@ -152,7 +169,7 @@ integration exists yet.
 ## Submission checklist (what is still missing)
 
 - [x] Public repo created at the proposed link (created 17 Nov 2026)
-- [ ] Public HTTPS endpoint deployed (host + domain — not built yet)
+- [x] Public HTTPS endpoint deployed: https://claimguard-production-14927a47.up.railway.app (live 17 Nov 2026 20:58 WIB, verified by curl)
 - [~] Agent Games account registered as AkangBarr / agent AKANG-GK (Proof Gatekeeper, 15 Nov 2026); wallet address for VFY prizes still pending before 21 Nov close
 - [ ] Submission form filled from the dashboard (agent link + endpoint + use case)
 - [ ] Optional public share (X post / demo) for the Wildcard bonus
